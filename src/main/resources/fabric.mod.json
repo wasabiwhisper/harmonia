@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 1,
+  "id": "harmonia",
+  "version": "${version}",
+  "name": "Harmonia",
+  "description": "Add compatability between Cadmus and Xaero's Worldmap.",
+  "authors": [
+    "wasabiwhisper"
+  ],
+  "contact": {
+    "repo": "https://github.com/wasabiwhisper/harmonia"
+  },
+  "license": "MIT",
+  "icon": "assets/harmonia/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "client": [
+      "dev.wasabiwhisper.harmonia.client.HarmoniaClient"
+    ],
+    "main": [
+      "dev.wasabiwhisper.harmonia.Harmonia"
+    ]
+  },
+  "mixins": [
+    "harmonia.mixins.json"
+  ],
+  "accessWidener": "harmonia.accesswidener",
+  "depends": {
+    "fabricloader": ">=${loader_version}",
+    "fabric": "*",
+    "minecraft": "${minecraft_version}",
+    "cadmus": ">=${cadmus_version}",
+    "resourcefullib": ">=${resourceful_lib_version}"
+  },
+  "suggests": {
+    "xaeroworldmap": ">=${xaeros_world_map_version}"
+  }
+}

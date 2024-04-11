@@ -35,9 +35,9 @@ public final class ClaimListenHandler {
         var level = server.getLevel(dimension);
         if (level == null) return;
         var claimData = ClaimHandler.getAllTeamClaims(level);
-        Map<ChunkPos, Pair<Boolean, ClaimType>> claims = new HashMap<>();
         if (claimData != null) {
             claimData.forEach((teamId, teamClaims) -> {
+                Map<ChunkPos, Pair<Boolean, ClaimType>> claims = new HashMap<>();
                 teamClaims.forEach((pos, type) -> {
                     claims.put(pos, Pair.of(true, type));
                 });

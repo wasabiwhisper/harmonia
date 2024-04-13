@@ -44,6 +44,7 @@ public class XaeroCompat {
     }
 
     private static void update(ResourceKey<Level> dimension, Map<ChunkPos, ClientClaims.Entry> claims) {
+        if (!Minecraft.getInstance().isSameThread()) return;
         manager.put(dimension, claims);
         MapProcessor mapProc = getMapProcessor();
         MapDimension mapDim = getMapDimension(dimension);
@@ -56,7 +57,17 @@ public class XaeroCompat {
                         if (regionOffsetX == 0 && regionOffsetZ == 0 || regionOffsetX * regionOffsetX != regionOffsetZ * regionOffsetZ) {
                             mapDim.getHighlightHandler().clearCachedHash(region.getKey() + regionOffsetX, region.getValue() + regionOffsetZ);
                             MapRegion mapRegion = mapDim.getLayeredMapRegions().getLeaf(caveLayer, region.getKey() + regionOffsetX, region.getValue() + regionOffsetZ);
-                            if (mapRegion != null) mapRegion.requestRefresh(mapProc);
+                            if (mapRegion != null) {
+                                synchronized(mapRegion) {
+                                    if (mapRegion.canRequestReload_unsynced()) {
+                                        if (mapRegion.getLoadState() == 2) {
+                                            mapRegion.requestRefresh(mapProc);
+                                        } else {
+                                            mapProc.getMapSaveLoad().requestLoad(mapRegion, "Gui");
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 }

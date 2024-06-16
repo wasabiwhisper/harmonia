@@ -32,7 +32,7 @@ public class XaeroClaimsManager {
         map.remove(dimension);
     }
 
-    public void changeSelection(ResourceKey<Level> dimension, int left, int top, int right, int bottom, boolean claim, @Nullable ClaimType type) {
+    public void changeSelection(ResourceKey<Level> dimension, int left, int top, int right, int bottom, boolean claim, @Nullable ClaimType type, boolean admin) {
         Map<ChunkPos, ClaimType> addedChunks = new HashMap<>();
         Map<ChunkPos, ClaimType> removedChunks = new HashMap<>();
         for (int x = left; x <= right; ++x) {
@@ -53,8 +53,9 @@ public class XaeroClaimsManager {
                     }
                 } else {
                     // Unclaim
-                    if (type == null && entry != null && entry.teamId().equals(ClientClaims.ID))
+                    if (type == null && entry != null && (admin || entry.teamId().equals(ClientClaims.ID))) {
                         removedChunks.put(new ChunkPos(x, z), entry.type());
+                    }
                     // Unchunkload
                     if (type == ClaimType.CLAIMED && entry != null && entry.teamId().equals(ClientClaims.ID) && entry.type() == ClaimType.CHUNK_LOADED)
                         addedChunks.put(new ChunkPos(x, z), type);

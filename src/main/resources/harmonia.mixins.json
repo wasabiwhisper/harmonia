@@ -4,6 +4,7 @@
   "package": "dev.wasabiwhisper.harmonia.mixin",
   "compatibilityLevel": "JAVA_17",
   "mixins": [
+    "api.claims.CadmusClaimApiMixin",
     "claims.CadmusClaimHandlerMixin",
     "network.CadmusNetworkHandlerMixin"
   ],

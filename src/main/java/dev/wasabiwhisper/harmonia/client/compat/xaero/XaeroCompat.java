@@ -121,6 +121,8 @@ public class XaeroCompat {
             Minecraft mc = Minecraft.getInstance();
             ResourceKey<Level> dimension = mc.level.dimension();
 
+            boolean hasUnclaimPermission = false;
+
             int left = mapTileSelection.getLeft();
             int top = mapTileSelection.getTop();
             int right = mapTileSelection.getRight();
@@ -145,6 +147,9 @@ public class XaeroCompat {
                     ClientClaims.Entry claim = manager.get(dimension, x, z);
                     hasUnclaimed = claim == null || hasUnclaimed;
                     if (claim != null) {
+                        if (mc.player != null) {
+                            hasUnclaimPermission = mc.player.hasPermissions(2) || hasUnclaimPermission;
+                        }
                         boolean isClaimedByPlayer = claim.teamId().equals(ClientClaims.ID);
                         hasClaimed = isClaimedByPlayer || hasClaimed;
                         hasUnchunkloaded = (isClaimedByPlayer && claim.type() == ClaimType.CLAIMED) || hasUnchunkloaded;
@@ -170,7 +175,7 @@ public class XaeroCompat {
                 options.add(new RightClickOption("gui.harmonia.claim_chunks", options.size(), screen) {
                     @Override
                     public void onAction(Screen screen) {
-                        manager.changeSelection(dimension, left, top, _right, _bottom, true, ClaimType.CLAIMED);
+                        manager.changeSelection(dimension, left, top, _right, _bottom, true, ClaimType.CLAIMED, false);
                     }
                 });
             }
@@ -180,7 +185,18 @@ public class XaeroCompat {
                 options.add(new RightClickOption("gui.harmonia.unclaim_chunks", options.size(), screen) {
                     @Override
                     public void onAction(Screen screen) {
-                        manager.changeSelection(dimension, left, top, _right, _bottom, false, null);
+                        manager.changeSelection(dimension, left, top, _right, _bottom, false, null, false);
+                    }
+                });
+            }
+            if (hasUnclaimPermission) {
+                int _right = right;
+                int _bottom = bottom;
+                boolean _hasUnclaimPermission = hasUnclaimPermission;
+                options.add(new RightClickOption("gui.harmonia.admin_unclaim_chunks", options.size(), screen) {
+                    @Override
+                    public void onAction(Screen screen) {
+                        manager.changeSelection(dimension, left, top, _right, _bottom, false, null, _hasUnclaimPermission);
                     }
                 });
             }
@@ -190,7 +206,7 @@ public class XaeroCompat {
                 options.add(new RightClickOption("gui.harmonia.chunkload_chunks", options.size(), screen) {
                     @Override
                     public void onAction(Screen screen) {
-                        manager.changeSelection(dimension, left, top, _right, _bottom, true, ClaimType.CHUNK_LOADED);
+                        manager.changeSelection(dimension, left, top, _right, _bottom, true, ClaimType.CHUNK_LOADED, false);
                     }
                 });
             }
@@ -200,7 +216,7 @@ public class XaeroCompat {
                 options.add(new RightClickOption("gui.harmonia.unchunkload_chunks", options.size(), screen) {
                     @Override
                     public void onAction(Screen screen) {
-                        manager.changeSelection(dimension, left, top, _right, _bottom, false, ClaimType.CLAIMED);
+                        manager.changeSelection(dimension, left, top, _right, _bottom, false, ClaimType.CLAIMED, false);
                     }
                 });
             }

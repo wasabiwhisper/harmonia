@@ -1,4 +1,4 @@
-package dev.wasabiwhisper.harmonia.mixin.api.claims;
+package dev.wasabiwhisper.harmonia.fabric.mixin.api.claims;
 
 import com.llamalad7.mixinextras.sugar.Local;
 import com.mojang.datafixers.util.Pair;

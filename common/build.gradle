@@ -1,0 +1,23 @@
+architectury {
+    common enabled_platforms.split(',')
+}
+
+dependencies {
+    // We depend on Fabric Loader here to use the Fabric @Environment annotations,
+    // which get remapped to the correct annotations on each platform.
+    // Do NOT use other classes from Fabric Loader.
+    modImplementation "net.fabricmc:fabric-loader:$fabric_loader_version"
+
+    // Architectury API. This is optional, and you can comment it out if you don't need it.
+    modImplementation "dev.architectury:architectury:$architectury_api_version"
+
+
+    // Cadmus
+    modImplementation(group: "earth.terrarium.cadmus", name: "cadmus-common-${minecraft_version}", version: cadmus_version)
+
+    // Xaeros
+    modCompileOnly("maven.modrinth:xaeros-world-map:${xaeros_world_map_version}_Fabric_1.20")
+
+    // Resourceful
+    modApi(group: "com.teamresourceful.resourcefullib", name: "resourcefullib-common-${minecraft_version}", version: resourceful_lib_version)
+}

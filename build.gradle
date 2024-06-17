@@ -1,140 +1,125 @@
 plugins {
-    id 'fabric-loom' version '1.5-SNAPSHOT'
+    id 'dev.architectury.loom' version '1.5-SNAPSHOT' apply false
+    id 'architectury-plugin' version '3.4-SNAPSHOT'
     id 'maven-publish'
     id 'com.github.johnrengelman.shadow' version "8.1.1"
 }
 
-version = project.mod_version
-group = project.maven_group
-
-base {
-    archivesName = project.archives_base_name
+architectury {
+    minecraft = minecraft_version
 }
 
-repositories {
-    // Add repositories to retrieve artifacts from in here.
-    // You should only use this when depending on other mods because
-    // Loom adds the essential maven repositories to download Minecraft and libraries from automatically.
-    // See https://docs.gradle.org/current/userguide/declaring_repositories.html
-    // for more information about repositories.
-    mavenCentral()
-    maven {
-        url = "https://api.modrinth.com/maven"
-        content {
-            includeGroup "maven.modrinth"
+allprojects {
+    group = maven_group
+    version = mod_version
+}
+
+
+subprojects {
+    apply plugin: 'dev.architectury.loom'
+    apply plugin: 'architectury-plugin'
+    apply plugin: 'maven-publish'
+
+    base {
+        // Set up a suffixed format for the mod jar names, e.g. `example-fabric`.
+        archivesName = "$archives_name-$project.name"
+    }
+
+    repositories {
+        // Add repositories to retrieve artifacts from in here.
+        // You should only use this when depending on other mods because
+        // Loom adds the essential maven repositories to download Minecraft and libraries from automatically.
+        // See https://docs.gradle.org/current/userguide/declaring_repositories.html
+        // for more information about repositories.
+        mavenCentral()
+        maven {
+            url = "https://api.modrinth.com/maven"
+            content {
+                includeGroup "maven.modrinth"
+            }
+        }
+        maven {
+            url = 'https://jitpack.io'
+            content {
+                includeGroup 'com.github.LlamaLad7'
+                includeGroup 'com.github.llamalad7.mixinextras'
+            }
+        }
+        maven {
+            url "https://maven.teamresourceful.com/repository/maven-public/"
+        }
+        maven {
+            url "https://maven.nucleoid.xyz/"
+            content {
+                includeGroup("eu.pb4")
+            }
+        }
+        maven {
+            url "https://maven.shedaniel.me/"
+        }
+        maven {
+            url "https://maven.architectury.dev/"
+        }
+
+    }
+
+    dependencies {
+        // To change the versions see the gradle.properties file
+        minecraft "com.mojang:minecraft:${minecraft_version}"
+        mappings loom.officialMojangMappings()
+
+        // Resourceful
+        compileOnly(group: "com.teamresourceful", name: "bytecodecs", version: "1.0.2")
+    }
+
+    loom {
+        accessWidenerPath = file("src/main/resources/harmonia.accesswidener")
+    }
+
+    def targetJavaVersion = 17
+    tasks.withType(JavaCompile).configureEach {
+        // ensure that the encoding is set to UTF-8, no matter what the system default is
+        // this fixes some edge cases with special characters not displaying correctly
+        // see http://yodaconditions.net/blog/fix-for-java-file-encoding-problems-with-gradle.html
+        // If Javadoc is generated, this must be specified in that task too.
+        it.options.encoding = "UTF-8"
+        if (targetJavaVersion >= 10 || JavaVersion.current().isJava10Compatible()) {
+            it.options.release.set(targetJavaVersion)
         }
     }
-    maven {
-        url = 'https://jitpack.io'
-        content {
-            includeGroup 'com.github.LlamaLad7'
-            includeGroup 'com.github.llamalad7.mixinextras'
+
+    java {
+        def javaVersion = JavaVersion.toVersion(targetJavaVersion)
+        if (JavaVersion.current() < javaVersion) {
+            toolchain.languageVersion = JavaLanguageVersion.of(targetJavaVersion)
+        }
+        // Loom will automatically attach sourcesJar to a RemapSourcesJar task and to the "build" task
+        // if it is present.
+        // If you remove this line, sources will not be generated.
+        withSourcesJar()
+    }
+
+    jar {
+        from("LICENSE") {
+            rename { "${it}_${archives_base_name}" }
         }
     }
-    maven {
-        url "https://maven.teamresourceful.com/repository/maven-public/"
-    }
-    maven {
-        url "https://maven.nucleoid.xyz/"
-        content {
-            includeGroup("eu.pb4")
-        }
-    }
-    maven {
-        url "https://maven.shedaniel.me/"
-    }
-    maven {
-        url "https://maven.architectury.dev/"
-    }
-
-}
-
-dependencies {
-    // To change the versions see the gradle.properties file
-    minecraft "com.mojang:minecraft:${minecraft_version}"
-    mappings loom.officialMojangMappings()
-    modImplementation "net.fabricmc:fabric-loader:${loader_version}"
-
-    // Fabric API. This is technically optional, but you probably want it anyway.
-    modImplementation "net.fabricmc.fabric-api:fabric-api:${fabric_version}"
-
-    // Cadmus
-    modImplementation(group: "earth.terrarium.cadmus", name: "cadmus-fabric-${minecraft_version}", version: cadmus_version)
-
-    // Xaeros
-    modCompileOnly("maven.modrinth:xaeros-world-map:${xaeros_world_map_version}_Fabric_1.20")
-    modLocalRuntime("maven.modrinth:xaeros-world-map:${xaeros_world_map_version}_Fabric_1.20")
-
-    // Resourceful
-    compileOnly(group: "com.teamresourceful", name: "bytecodecs", version: "1.0.2")
-    modApi(group: "com.teamresourceful.resourcefullib", name: "resourcefullib-fabric-${minecraft_version}", version: resourceful_lib_version)
-}
-
-loom {
-    accessWidenerPath = file("src/main/resources/harmonia.accesswidener")
-}
-
-processResources {
-    inputs.property "version", version
-    inputs.property "minecraft_version", minecraft_version
-    inputs.property "loader_version", loader_version
-    inputs.property "cadmus_version", cadmus_version
-    inputs.property "xaeros_world_map_version", xaeros_world_map_version
-    inputs.property "resourceful_lib_version", resourceful_lib_version
-    filteringCharset "UTF-8"
-
-    filesMatching("fabric.mod.json") {
-        expand "version": version,
-                "minecraft_version": minecraft_version,
-                "loader_version": loader_version,
-                "cadmus_version": cadmus_version,
-                "xaeros_world_map_version": xaeros_world_map_version,
-                "resourceful_lib_version": resourceful_lib_version
-    }
-}
-
-def targetJavaVersion = 17
-tasks.withType(JavaCompile).configureEach {
-    // ensure that the encoding is set to UTF-8, no matter what the system default is
-    // this fixes some edge cases with special characters not displaying correctly
-    // see http://yodaconditions.net/blog/fix-for-java-file-encoding-problems-with-gradle.html
-    // If Javadoc is generated, this must be specified in that task too.
-    it.options.encoding = "UTF-8"
-    if (targetJavaVersion >= 10 || JavaVersion.current().isJava10Compatible()) {
-        it.options.release.set(targetJavaVersion)
-    }
-}
-
-java {
-    def javaVersion = JavaVersion.toVersion(targetJavaVersion)
-    if (JavaVersion.current() < javaVersion) {
-        toolchain.languageVersion = JavaLanguageVersion.of(targetJavaVersion)
-    }
-    // Loom will automatically attach sourcesJar to a RemapSourcesJar task and to the "build" task
-    // if it is present.
-    // If you remove this line, sources will not be generated.
-    withSourcesJar()
-}
-
-jar {
-    from("LICENSE") {
-        rename { "${it}_${project.archivesBaseName}" }
-    }
-}
 
 // configure the maven publication
-publishing {
-    publications {
-        mavenJava(MavenPublication) {
-            from components.java
+    publishing {
+        publications {
+            mavenJava(MavenPublication) {
+                from components.java
+            }
+        }
+
+        // See https://docs.gradle.org/current/userguide/publishing_maven.html for information on how to set up publishing.
+        repositories {
+            // Add repositories to publish to here.
+            // Notice: This block does NOT have the same function as the block in the top level.
+            // The repositories here will be used for publishing your artifact, not for
+            // retrieving dependencies.
         }
     }
 
-    // See https://docs.gradle.org/current/userguide/publishing_maven.html for information on how to set up publishing.
-    repositories {
-        // Add repositories to publish to here.
-        // Notice: This block does NOT have the same function as the block in the top level.
-        // The repositories here will be used for publishing your artifact, not for
-        // retrieving dependencies.
-    }
 }

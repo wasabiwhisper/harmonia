@@ -14,17 +14,17 @@
   "icon": "assets/harmonia/icon.png",
   "environment": "*",
   "entrypoints": {
-    "client": [
-      "dev.wasabiwhisper.harmonia.client.HarmoniaClient"
-    ],
     "main": [
-      "dev.wasabiwhisper.harmonia.Harmonia"
+      "dev.wasabiwhisper.harmonia.fabric.HarmoniaFabric"
+    ],
+    "client": [
+      "dev.wasabiwhisper.harmonia.fabric.client.HarmoniaFabricClient"
     ]
   },
   "mixins": [
-    "harmonia.mixins.json"
+    "harmonia-fabric.mixins.json",
+    "harmonia-common.mixins.json"
   ],
-  "accessWidener": "harmonia.accesswidener",
   "depends": {
     "fabricloader": ">=${loader_version}",
     "fabric": "*",
